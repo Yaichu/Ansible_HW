@@ -1,0 +1,63 @@
+---
+- name: Docker installation Playbook
+  hosts: all #nodes
+  remote_user: ubuntu
+  become: true
+  tasks:
+  - name: update apt and install packages to allow apt to use a repository over https
+    apt:
+      update_cache: yes
+      state: latest
+      package: # = name
+        ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg-agent', 'software-properties-common']
+      # - apt-transport-https
+      # - ca-certificates
+      # - curl
+      # - gnupg-agent
+      # - software-properties-common
+
+  - name: Add Docker's official GPG Key
+    apt_key:
+     # fingerprint:  9DC8 5822 9FC7 DD38 854A E2D8 8D81 803C 0EBF CD88
+      url: https://download.docker.com/linux/ubuntu/gpg
+      id: 0EBFCD88
+      state: present
+
+  - name: Add Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable #test
+      state: present
+      # codename: "{{ ansible_distribution_release }}"
+      when: ansible_distribution == "Ubuntu"
+
+  - name: Update apt and install the latest (specific) docker engine version
+    apt:
+      update_cache: yes
+      state: latest
+      package: ['docker-ce', 'docker-ce-cli', 'containered.io']
+      # - docker-ce
+      # - docker-ce-cli
+      # - containerd.io
+
+  # - name: Restart docker service if there are updates
+  #   service:
+  #       name: docker
+  #       state: restarted # restarted: true
+  #       when: dockerservice.changed
+
+  handlers:
+  - name: "restart docker"
+    service:
+      name: docker
+      state: restarted
+
+  # - name: Create docker group
+  #     group:
+  #       name: docker
+  #       state: present
+
+  - name: Add ubuntu to the Docker group
+    user:
+      name: ubuntu
+      groups: docker
+      append: yes
