@@ -1,0 +1,16 @@
+---
+- name: Ensure docker users are added to the docker ubuntu group.
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  with_items: "{{ docker_ubuntu_users }}"
+  when: ansible_distribution == 'Ubuntu'
+
+  - name: Ensure docker users are added to the docker redhat group.
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  with_items: "{{ docker_ubuntu_users }}"
+  when: ansible_distribution == 'Ubuntu'

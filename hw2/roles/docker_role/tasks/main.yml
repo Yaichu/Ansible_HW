@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  tasks:
+    - name: install docker on redhat
+      include_tasks: redhat_dist.yml
+      when: ansible_distribution == 'RedHat'
+
+    - name: install docker on ubuntu
+      include_tasks: ubuntu_dist.yml
+      when: ansible_distribution == 'Ubuntu'

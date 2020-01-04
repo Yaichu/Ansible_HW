@@ -1,0 +1,35 @@
+---
+# tasks file ubuntu for roles/docker_role
+- name: update apt and install packages to allow apt to use a repository over https
+  apt:
+    update_cache: yes
+    state: latest
+    package: # = name
+      ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg-agent', 'software-properties-common']
+    # - apt-transport-https
+    # - ca-certificates
+    # - curl
+    # - gnupg-agent
+    # - software-properties-common
+
+- name: Add Docker's official GPG Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    id: 0EBFCD88
+    state: present
+
+- name: Add Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable #test
+    state: present
+    # codename: "{{ ansible_distribution_release }}"
+    # when: ansible_distribution == "Ubuntu"
+
+- name: Update apt and install the latest (specific) docker engine version
+  apt:
+    update_cache: yes
+    state: latest #"{{ docker_version }}"
+    package: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+    # - docker-ce
+    # - docker-ce-cli
+    # - containerd.io
