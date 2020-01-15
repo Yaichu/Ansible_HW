@@ -12,12 +12,6 @@
     - docker-latest-logrotate
     - docker-logrotate
     state: absent
-    
-
-# - name: Add Docker's official GPG Key
-#   rpm_key:
-#     url: https://download.docker.com/linux/centos/gpg
-#     state: present
 
 - name: docker_role | redhat_dist | Install yum packages
   yum:
