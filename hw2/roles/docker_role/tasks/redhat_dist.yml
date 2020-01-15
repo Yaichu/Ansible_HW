@@ -1,41 +1,68 @@
 ---
 # tasks file redhat for roles/docker_role
-- name: Ensure old versions of Docker are not installed.
-  package:
+- name: docker_role | redhat_dist | Ensure old versions of Docker are not installed.
+  yum:
     name:
-      - docker
-      - docker-common
-      - docker-engine
+    - docker
+    - docker-common
+    - docker-engine
+    - docker-client
+    - docker-client-latest
+    - docker-latest
+    - docker-latest-logrotate
+    - docker-logrotate
     state: absent
+    
 
-- name: Add Docker's official GPG Key
-    rpm_key:
-      url: https://download.docker.com/linux/centos/gpg
-      state: present
+# - name: Add Docker's official GPG Key
+#   rpm_key:
+#     url: https://download.docker.com/linux/centos/gpg
+#     state: present
 
-- name: Add Repository
-    get_url:
-      url: "{{ docker_yum_repo_url }}"
-      dest: '/etc/yum.repos.d/docker-{{ docker_edition }}.repo'
-      owner: root
-      group: root
-
-- name: Configure Docker Edge repo.
-  ini_file:
-    dest: '/etc/yum.repos.d/docker-{{ docker_edition }}.repo'
-    section: 'docker-{{ docker_edition }}-edge'
-    option: enabled
-    value: '{{ docker_yum_repo_enable_edge }}'
-
-- name: Configure Docker Test repo.
-  ini_file:
-    dest: '/etc/yum.repos.d/docker-{{ docker_edition }}.repo'
-    section: 'docker-{{ docker_edition }}-test'
-    option: enabled
-    value: '{{ docker_yum_repo_enable_test }}'
-
-- name: Install containerd separately (CentOS 8).
-  package:
-    name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
+- name: docker_role | redhat_dist | Install yum packages
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
     state: present
-  when: ansible_distribution_major_version | int == 8
+    update_cache: yes
+
+- name: docker_role | redhat_dist | Add Docker Repository
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: '/etc/yum.repos.d/docker-ce.repo'
+
+# - name: Install containerd separately (CentOS 8).
+#   package:
+#     name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
+#     state: present
+#   when: ansible_distribution_major_version | int == 8
+
+- name: docker_role | redhat_dist | Install the latest version of Docker Engine
+  yum:
+    update_cache: yes
+    name: "{{ packages }}"
+    state: latest 
+  vars:
+    packages:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+  notify: 
+     - restart docker
+
+# - name: Enable Docker
+#   service:
+#     name: docker
+#     state: '{{docker_service_state}}'
+#     enabled: '{{docker_service_enabled}}'
+
+- name: docker_role | redhat_dist | add user to group
+  user:
+      name: "{{item}}"
+      groups: docker
+      append: yes
+  loop: "{{docker_redhat_users}}"

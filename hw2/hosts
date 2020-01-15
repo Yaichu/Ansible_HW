@@ -1,0 +1,6 @@
+[ubuntu]
+172.31.87.158
+172.31.92.220
+
+[redhat]
+172.31.92.219 ansible_user=ec2-user
